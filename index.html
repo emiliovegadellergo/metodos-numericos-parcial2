@@ -225,16 +225,19 @@
     }
 
     /* ── Procedimiento ─────────────────────────────── */
-    .step-list { list-style: none; counter-reset: step; }
+    .step-list { list-style: none; counter-reset: step; max-width: 100%; overflow-x: hidden; }
     .step-list li {
       counter-increment: step;
       display: flex;
+      flex-direction: row;
       gap: .9rem;
       padding: .7rem 0;
       border-bottom: 1px solid #1e252e;
       font-size: .87rem;
       line-height: 1.6;
       align-items: flex-start;
+      max-width: 100%;
+      overflow-x: hidden;
     }
     .step-list li:last-child { border-bottom: none; }
     .step-list li::before {
@@ -247,9 +250,29 @@
       font-weight: 800;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      margin-top: .1rem;
+      margin-top: .2rem;
+    }
+    /* contenedor del texto dentro de cada paso */
+    .step-list li > div,
+    .step-list li > span {
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .step-body {
+      display: flex;
+      flex-direction: column;
+      gap: .35rem;
+      flex: 1 1 0;
+      min-width: 0;
+      max-width: 100%;
+    }
+    .step-label {
+      display: block;
+      color: var(--text);
     }
     .step-list li .math {
+      display: inline-block;
       font-family: 'Courier New', monospace;
       background: #0d1117;
       border: 1px solid var(--border);
@@ -257,17 +280,37 @@
       padding: .15rem .45rem;
       font-size: .83rem;
       color: #e3b341;
-      white-space: nowrap;
+      white-space: normal;
+      word-break: break-all;
+      max-width: 100%;
+    }
+    .math-block {
+      display: block;
+      font-family: 'Courier New', monospace;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: .3rem .6rem;
+      font-size: .83rem;
+      color: #e3b341;
+      white-space: normal;
+      word-break: break-all;
+      max-width: 100%;
+      margin-top: .15rem;
     }
     .step-result {
+      display: block;
       background: #0d1117;
       border: 1px solid #2e6f2e;
       border-radius: 6px;
-      padding: .65rem 1rem;
-      margin-top: .5rem;
+      padding: .55rem .9rem;
+      margin-top: .35rem;
       font-family: 'Courier New', monospace;
       font-size: .85rem;
       color: var(--positive);
+      white-space: normal;
+      word-break: break-all;
+      max-width: 100%;
     }
     .step-result span { color: var(--muted); font-size: .78rem; }
 
@@ -424,28 +467,28 @@
       <div class="card">
         <div class="card-title">Procedimiento paso a paso</div>
         <ol class="step-list">
-          <li>
-            Definir la función y su derivada:<br>
-            <span class="math">f(x) = 5eˣ − 2x − 10</span> &nbsp;&nbsp;
-            <span class="math">f′(x) = 5eˣ − 2</span>
-          </li>
-          <li>
-            Evaluar en el valor inicial <span class="math">x₀ = 0</span>:<br>
-            <span class="math">f(0) = 5e⁰ − 2(0) − 10 = 5 − 10 = −5.00000</span><br>
-            <span class="math">f′(0) = 5e⁰ − 2 = 5 − 2 = 3.00000</span>
-          </li>
-          <li>
-            Aplicar la fórmula de Newton-Raphson para obtener x₁:<br>
-            <span class="math">x₁ = x₀ − f(x₀)/f′(x₀) = 0 − (−5)/3 = 0 + 1.66667</span>
+          <li><div class="step-body">
+            <span class="step-label">Definir la función y su derivada:</span>
+            <span class="math-block">f(x) = 5eˣ − 2x − 10</span>
+            <span class="math-block">f′(x) = 5eˣ − 2</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Evaluar en el valor inicial x₀ = 0:</span>
+            <span class="math-block">f(0) = 5e⁰ − 2(0) − 10 = 5 − 10 = −5.00000</span>
+            <span class="math-block">f′(0) = 5e⁰ − 2 = 5 − 2 = 3.00000</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Aplicar la fórmula de Newton-Raphson para obtener x₁:</span>
+            <span class="math-block">x₁ = x₀ − f(x₀)/f′(x₀) = 0 − (−5)/3 = 0 + 1.66667</span>
             <div class="step-result">x₁ = 1.66667 &nbsp;<span>← primera iteración</span></div>
-          </li>
-          <li>
-            Calcular el error relativo en x₁:<br>
-            <span class="math">Er = |x₁ − x₀| / |x₁| = |1.66667 − 0| / |1.66667| = 1.00000e+00</span>
-          </li>
-          <li>
-            Como Er ≥ 1×10⁻⁵, continuar iterando hasta que el error sea menor que la tolerancia. El método converge en <strong>6 iteraciones</strong>.
-          </li>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Calcular el error relativo en x₁:</span>
+            <span class="math-block">Er = |x₁ − x₀| / |x₁| = |1.66667 − 0| / |1.66667| = 1.00000e+00</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Como Er ≥ 1×10⁻⁵, continuar iterando hasta que el error sea menor que la tolerancia. El método converge en <strong>6 iteraciones</strong>.</span>
+          </div></li>
         </ol>
       </div>
 
@@ -532,30 +575,30 @@
       <div class="card">
         <div class="card-title">Procedimiento paso a paso</div>
         <ol class="step-list">
-          <li>
-            Definir la función:<br>
-            <span class="math">f(x) = √x − 2·ln(x)</span>
-          </li>
-          <li>
-            Evaluar en los dos valores iniciales:<br>
-            <span class="math">f(3) = √3 − 2·ln(3) = 1.73205 − 2.19722 = −0.46517</span><br>
-            <span class="math">f(5) = √5 − 2·ln(5) = 2.23607 − 3.21888 = −0.98281</span>
-          </li>
-          <li>
-            Aplicar la fórmula de la Secante con x₀=3, x₁=5:<br>
-            <span class="math">x₂ = 5 − f(5)·(5−3) / (f(5)−f(3))</span><br>
-            <span class="math">x₂ = 5 − (−0.98281)·(2) / (−0.98281−(−0.46517))</span><br>
-            <span class="math">x₂ = 5 − (−1.96562) / (−0.51764)</span><br>
-            <span class="math">x₂ = 5 − 3.79731 = 1.20269</span>
+          <li><div class="step-body">
+            <span class="step-label">Definir la función:</span>
+            <span class="math-block">f(x) = √x − 2·ln(x)</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Evaluar en los dos valores iniciales:</span>
+            <span class="math-block">f(3) = √3 − 2·ln(3) = 1.73205 − 2.19722 = −0.46517</span>
+            <span class="math-block">f(5) = √5 − 2·ln(5) = 2.23607 − 3.21888 = −0.98281</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Aplicar la fórmula de la Secante con x₀=3, x₁=5:</span>
+            <span class="math-block">x₂ = 5 − f(5)·(5−3) / (f(5)−f(3))</span>
+            <span class="math-block">x₂ = 5 − (−0.98281)·(2) / (−0.98281−(−0.46517))</span>
+            <span class="math-block">x₂ = 5 − (−1.96562) / (−0.51764)</span>
+            <span class="math-block">x₂ = 5 − 3.79731 = 1.20269</span>
             <div class="step-result">x₂ = 1.20269 &nbsp;<span>← primera iteración efectiva</span></div>
-          </li>
-          <li>
-            Calcular el error relativo:<br>
-            <span class="math">Er = |x₂ − x₁| / |x₂| = |1.20269 − 5| / |1.20269| = 3.15734e+00</span>
-          </li>
-          <li>
-            Como Er ≥ 1×10⁻⁵, continuar con la ventana deslizante hasta convergencia. El método converge en <strong>9 iteraciones</strong>.
-          </li>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Calcular el error relativo:</span>
+            <span class="math-block">Er = |x₂ − x₁| / |x₂| = |1.20269 − 5| / |1.20269| = 3.15734e+00</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Como Er ≥ 1×10⁻⁵, continuar con la ventana deslizante hasta convergencia. El método converge en <strong>9 iteraciones</strong>.</span>
+          </div></li>
         </ol>
       </div>
 
@@ -645,29 +688,29 @@
       <div class="card">
         <div class="card-title">Procedimiento paso a paso</div>
         <ol class="step-list">
-          <li>
-            Definir la función:<br>
-            <span class="math">f(y) = e⁻ʸ − 4y</span>
-          </li>
-          <li>
-            Verificar cambio de signo en el intervalo [0.1, 0.3]:<br>
-            <span class="math">f(0.1) = e⁻⁰·¹ − 4(0.1) = 0.90484 − 0.40000 = +0.50484 &gt; 0</span><br>
-            <span class="math">f(0.3) = e⁻⁰·³ − 4(0.3) = 0.74082 − 1.20000 = −0.45918 &lt; 0</span>
+          <li><div class="step-body">
+            <span class="step-label">Definir la función:</span>
+            <span class="math-block">f(y) = e⁻ʸ − 4y</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Verificar cambio de signo en el intervalo [0.1, 0.3]:</span>
+            <span class="math-block">f(0.1) = e⁻⁰·¹ − 4(0.1) = 0.90484 − 0.40000 = +0.50484 &gt; 0</span>
+            <span class="math-block">f(0.3) = e⁻⁰·³ − 4(0.3) = 0.74082 − 1.20000 = −0.45918 &lt; 0</span>
             <div class="step-result">f(0.1) · f(0.3) &lt; 0 &nbsp;<span>← cambio de signo confirmado ✓</span></div>
-          </li>
-          <li>
-            Calcular el primer punto medio:<br>
-            <span class="math">c = (a + b) / 2 = (0.1 + 0.3) / 2 = 0.20000</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Calcular el primer punto medio:</span>
+            <span class="math-block">c = (a + b) / 2 = (0.1 + 0.3) / 2 = 0.20000</span>
             <div class="step-result">c₁ = 0.20000 &nbsp;<span>← iteración 1</span></div>
-          </li>
-          <li>
-            Evaluar f(c) y decidir el nuevo subintervalo:<br>
-            <span class="math">f(0.2) = e⁻⁰·² − 4(0.2) = 0.81873 − 0.80000 = +0.01873</span><br>
-            Como f(0.1)&gt;0 y f(0.2)&gt;0 → la raíz está en <span class="math">[0.2, 0.3]</span>
-          </li>
-          <li>
-            Continuar bisectando hasta que el error absoluto sea menor que 0.01. El método converge en <strong>5 iteraciones</strong>.
-          </li>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Evaluar f(c) y decidir el nuevo subintervalo:</span>
+            <span class="math-block">f(0.2) = e⁻⁰·² − 4(0.2) = 0.81873 − 0.80000 = +0.01873</span>
+            <span class="step-label">Como f(0.1)&gt;0 y f(0.2)&gt;0 → la raíz está en [0.2, 0.3]</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Continuar bisectando hasta que el error absoluto sea menor que 0.01. El método converge en <strong>5 iteraciones</strong>.</span>
+          </div></li>
         </ol>
       </div>
 
@@ -751,29 +794,29 @@
       <div class="card">
         <div class="card-title">Procedimiento paso a paso</div>
         <ol class="step-list">
-          <li>
-            Definir la función y su derivada:<br>
-            <span class="math">f(t) = cos(t) − e⁻ᵗ</span> &nbsp;&nbsp;
-            <span class="math">f′(t) = −sin(t) + e⁻ᵗ</span>
-          </li>
-          <li>
-            Evaluar en el valor inicial <span class="math">t₀ = 1</span>:<br>
-            <span class="math">f(1) = cos(1) − e⁻¹ = 0.54030 − 0.36788 = 0.17242</span><br>
-            <span class="math">f′(1) = −sin(1) + e⁻¹ = −0.84147 + 0.36788 = −0.47359</span>
-          </li>
-          <li>
-            Aplicar la fórmula de Newton-Raphson para obtener t₁:<br>
-            <span class="math">t₁ = t₀ − f(t₀)/f′(t₀) = 1 − (0.17242)/(−0.47359)</span><br>
-            <span class="math">t₁ = 1 − (−0.36408) = 1.36408</span>
+          <li><div class="step-body">
+            <span class="step-label">Definir la función y su derivada:</span>
+            <span class="math-block">f(t) = cos(t) − e⁻ᵗ</span>
+            <span class="math-block">f′(t) = −sin(t) + e⁻ᵗ</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Evaluar en el valor inicial t₀ = 1:</span>
+            <span class="math-block">f(1) = cos(1) − e⁻¹ = 0.54030 − 0.36788 = 0.17242</span>
+            <span class="math-block">f′(1) = −sin(1) + e⁻¹ = −0.84147 + 0.36788 = −0.47359</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Aplicar la fórmula de Newton-Raphson para obtener t₁:</span>
+            <span class="math-block">t₁ = t₀ − f(t₀)/f′(t₀) = 1 − (0.17242)/(−0.47359)</span>
+            <span class="math-block">t₁ = 1 − (−0.36408) = 1.36408</span>
             <div class="step-result">t₁ = 1.36408 &nbsp;<span>← primera iteración</span></div>
-          </li>
-          <li>
-            Calcular el error relativo en t₁:<br>
-            <span class="math">Er = |t₁ − t₀| / |t₁| = |1.36408 − 1| / |1.36408| = 2.66903e−01</span>
-          </li>
-          <li>
-            Como Er ≥ 1×10⁻⁵, continuar iterando. Gracias a la convergencia cuadrática, el método converge en solo <strong>4 iteraciones</strong>.
-          </li>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Calcular el error relativo en t₁:</span>
+            <span class="math-block">Er = |t₁ − t₀| / |t₁| = |1.36408 − 1| / |1.36408| = 2.66903e−01</span>
+          </div></li>
+          <li><div class="step-body">
+            <span class="step-label">Como Er ≥ 1×10⁻⁵, continuar iterando. Gracias a la convergencia cuadrática, el método converge en solo <strong>4 iteraciones</strong>.</span>
+          </div></li>
         </ol>
       </div>
 
