@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Métodos Numéricos — Parcial 2</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0d1117;
+      --surface:  #161b22;
+      --border:   #30363d;
+      --accent:   #58a6ff;
+      --accent2:  #3fb950;
+      --text:     #c9d1d9;
+      --muted:    #8b949e;
+      --header:   #21262d;
+      --positive: #3fb950;
+      --tab-h:    44px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ══════════════════════════════════════════════════
+       PORTADA
+    ══════════════════════════════════════════════════ */
+    #portada {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      background: radial-gradient(ellipse at 50% 0%, #1a2a4a 0%, var(--bg) 65%);
+      text-align: center;
+    }
+
+    .portada-logo {
+      font-size: .7rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.8rem;
+      opacity: .8;
+    }
+
+    .portada-title {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      color: #e6edf3;
+      letter-spacing: .03em;
+      line-height: 1.2;
+      margin-bottom: .6rem;
+    }
+
+    .portada-sub {
+      font-size: 1rem;
+      color: var(--accent);
+      font-weight: 600;
+      margin-bottom: 2.4rem;
+      letter-spacing: .06em;
+    }
+
+    .portada-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.8rem 2.4rem;
+      max-width: 560px;
+      width: 100%;
+      margin-bottom: 2.4rem;
+      text-align: left;
+    }
+
+    .portada-row {
+      display: flex;
+      gap: .6rem;
+      padding: .6rem 0;
+      border-bottom: 1px solid #1e252e;
+      font-size: .9rem;
+      align-items: baseline;
+    }
+    .portada-row:last-child { border-bottom: none; }
+    .portada-row .key {
+      min-width: 110px;
+      font-size: .7rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .portada-row .val {
+      color: #e6edf3;
+      font-weight: 500;
+    }
+    .portada-row .val.highlight { color: var(--accent); font-weight: 700; }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      padding: .75rem 2rem;
+      background: var(--accent);
+      color: #0d1117;
+      font-size: .95rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: .04em;
+      transition: background .15s, transform .1s;
+    }
+    .btn-primary:hover { background: #79b8ff; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* ══════════════════════════════════════════════════
+       SIMULADOR (tabs)
+    ══════════════════════════════════════════════════ */
+    #simulador { display: none; padding: 2rem 1rem 4rem; }
+    #simulador.visible { display: block; }
+
+    .sim-header { text-align: center; margin-bottom: 2.5rem; }
+    .sim-header h1 {
+      font-size: 1.5rem; font-weight: 700;
+      letter-spacing: .04em; color: #e6edf3;
+    }
+    .sim-header p {
+      margin-top: .4rem; font-size: .82rem;
+      color: var(--muted); letter-spacing: .06em; text-transform: uppercase;
+    }
+    .sim-back {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: none; border: 1px solid var(--border);
+      color: var(--muted); font-size: .78rem; border-radius: 6px;
+      padding: .3rem .8rem; cursor: pointer; margin-bottom: 1.2rem;
+      transition: color .15s, border-color .15s;
+    }
+    .sim-back:hover { color: var(--text); border-color: var(--text); }
+
+    .container { max-width: 900px; margin: 0 auto; }
+
+    /* ── Tabs ──────────────────────────────────────── */
+    .tab-bar {
+      display: flex;
+      border-bottom: 2px solid var(--border);
+      gap: 2px;
+    }
+    .tab-btn {
+      height: var(--tab-h); padding: 0 1.2rem;
+      background: transparent; border: none;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      color: var(--muted); font-size: .85rem; font-weight: 600;
+      letter-spacing: .04em; cursor: pointer; text-transform: uppercase;
+      transition: color .15s, border-color .15s; white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-panel { display: none; padding-top: 1.8rem; }
+    .tab-panel.active { display: block; }
+
+    /* ── Card ──────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.4rem 1.6rem;
+      margin-bottom: 1.4rem;
+    }
+    .card-title {
+      font-size: .7rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: .8rem;
+    }
+
+    /* ── Badges ────────────────────────────────────── */
+    .method-meta { display: flex; flex-wrap: wrap; gap: .6rem .5rem; margin-bottom: 1rem; }
+    .badge {
+      display: inline-flex; align-items: center; gap: .35rem;
+      padding: .2rem .65rem; border-radius: 20px;
+      font-size: .78rem; font-weight: 600; border: 1px solid;
+    }
+    .badge.method { color: #d2a8ff; border-color: #6e40c9; background: #1a0e2e; }
+    .badge.eq     { color: #79c0ff; border-color: #1f6feb; background: #0d1e3a; font-family: 'Courier New', monospace; font-size: .76rem; }
+    .badge.param  { color: #a5d6a7; border-color: #2e6f2e; background: #0d1f0d; font-family: 'Courier New', monospace; font-size: .76rem; }
+
+    /* ── Sobre el método ───────────────────────────── */
+    .method-desc { font-size: .88rem; line-height: 1.7; color: var(--text); }
+    .method-desc p { margin-bottom: .7rem; }
+    .method-desc p:last-child { margin-bottom: 0; }
+    .method-desc strong { color: #e6edf3; }
+
+    .formula-box {
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 6px;
+      padding: .8rem 1.1rem;
+      margin: .8rem 0;
+      font-family: 'Courier New', monospace;
+      font-size: .9rem;
+      color: #e3b341;
+      letter-spacing: .03em;
+    }
+
+    .pros-list {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: .4rem;
+      margin-top: .6rem;
+    }
+    .pros-list li {
+      background: #0d1f0d;
+      border: 1px solid #2e6f2e;
+      color: #a5d6a7;
+      border-radius: 5px;
+      padding: .2rem .65rem;
+      font-size: .78rem;
+    }
+
+    /* ── Procedimiento ─────────────────────────────── */
+    .step-list { list-style: none; counter-reset: step; }
+    .step-list li {
+      counter-increment: step;
+      display: flex;
+      gap: .9rem;
+      padding: .7rem 0;
+      border-bottom: 1px solid #1e252e;
+      font-size: .87rem;
+      line-height: 1.6;
+      align-items: flex-start;
+    }
+    .step-list li:last-child { border-bottom: none; }
+    .step-list li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      background: var(--accent);
+      color: #0d1117;
+      font-size: .72rem;
+      font-weight: 800;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: .1rem;
+    }
+    .step-list li .math {
+      font-family: 'Courier New', monospace;
+      background: #0d1117;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: .15rem .45rem;
+      font-size: .83rem;
+      color: #e3b341;
+      white-space: nowrap;
+    }
+    .step-result {
+      background: #0d1117;
+      border: 1px solid #2e6f2e;
+      border-radius: 6px;
+      padding: .65rem 1rem;
+      margin-top: .5rem;
+      font-family: 'Courier New', monospace;
+      font-size: .85rem;
+      color: var(--positive);
+    }
+    .step-result span { color: var(--muted); font-size: .78rem; }
+
+    /* ── Table ─────────────────────────────────────── */
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; font-family: 'Courier New', Courier, monospace; }
+    thead tr { background: var(--header); }
+    thead th {
+      padding: .55rem .8rem; text-align: right;
+      font-size: .7rem; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    thead th:first-child { text-align: center; }
+    tbody tr { border-bottom: 1px solid #21262d; transition: background .1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #1c2128; }
+    tbody td { padding: .45rem .8rem; text-align: right; color: var(--text); }
+    tbody td:first-child { text-align: center; color: var(--muted); font-weight: 700; }
+
+    .val-pos  { color: var(--positive); }
+    .val-neg  { color: #f97583; }
+    .val-zero { color: var(--muted); }
+    .val-err  { color: var(--muted); font-style: italic; }
+    .val-conv { color: #e3b341; font-weight: 700; }
+
+    /* ── Result chips ──────────────────────────────── */
+    .result-box { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 1.2rem; }
+    .result-chip {
+      flex: 1 1 180px; background: var(--header);
+      border: 1px solid var(--border); border-radius: 6px; padding: .7rem 1rem;
+    }
+    .result-chip .label { font-size: .68rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .25rem; }
+    .result-chip .value { font-size: 1.2rem; font-weight: 700; font-family: 'Courier New', monospace; color: #e3b341; }
+    .result-chip .value.green { color: var(--positive); }
+    .result-chip .value.blue  { color: var(--accent); }
+    .result-chip .sub { font-size: .72rem; color: var(--muted); margin-top: .15rem; font-family: 'Courier New', monospace; }
+
+    /* ── Conv bar ──────────────────────────────────── */
+    .conv-row { margin-top: 1.2rem; }
+    .conv-label { font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: .4rem; }
+    .conv-bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .conv-bar-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent), var(--positive));
+      animation: grow .8s ease-out forwards; transform-origin: left;
+    }
+    @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+    .bis td { font-size: .79rem; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     PORTADA
+════════════════════════════════════════════════════ -->
+<section id="portada">
+  <div class="portada-logo">Universidad Anáhuac Mayab &nbsp;·&nbsp; 2026</div>
+
+  <h1 class="portada-title">Métodos Numéricos</h1>
+  <p class="portada-sub">Parcial 2 &nbsp;·&nbsp; Periodo 202610</p>
+
+  <div class="portada-card">
+    <div class="portada-row">
+      <span class="key">Alumno</span>
+      <span class="val highlight">Emilio Vega del Lergo</span>
+    </div>
+    <div class="portada-row">
+      <span class="key">Materia</span>
+      <span class="val">Métodos Numéricos</span>
+    </div>
+    <div class="portada-row">
+      <span class="key">Profesor</span>
+      <span class="val">Raúl Pareja Rodríguez</span>
+    </div>
+    <div class="portada-row">
+      <span class="key">Carrera</span>
+      <span class="val">Ingeniería en Tecnologías de la Información y Negocios Digitales</span>
+    </div>
+    <div class="portada-row">
+      <span class="key">Semestre</span>
+      <span class="val">4to Semestre</span>
+    </div>
+    <div class="portada-row">
+      <span class="key">Examen</span>
+      <span class="val highlight">Parcial 2 — Periodo 202610</span>
+    </div>
+    <div class="portada-row">
+      <span class="key">Universidad</span>
+      <span class="val">Anáhuac Mayab</span>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="verEjercicios()">
+    Ver Ejercicios &nbsp;→
+  </button>
+</section>
+
+<!-- ════════════════════════════════════════════════════
+     SIMULADOR
+════════════════════════════════════════════════════ -->
+<div id="simulador">
+  <div class="sim-header">
+    <button class="sim-back" onclick="volverPortada()">← Portada</button>
+    <h1>Métodos Numéricos &mdash; Parcial 2</h1>
+    <p>Simulador de resultados &nbsp;·&nbsp; Raíces de ecuaciones</p>
+  </div>
+
+  <div class="container">
+
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" onclick="showTab(0)" role="tab">Ejercicio 1a</button>
+      <button class="tab-btn"        onclick="showTab(1)" role="tab">Ejercicio 1b</button>
+      <button class="tab-btn"        onclick="showTab(2)" role="tab">Ejercicio 2</button>
+      <button class="tab-btn"        onclick="showTab(3)" role="tab">Ejercicio 3</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+         TAB 1 — Ejercicio 1a: Newton-Raphson
+    ══════════════════════════════════════════════ -->
+    <div class="tab-panel active" id="panel-0">
+
+      <!-- Configuración -->
+      <div class="card">
+        <div class="card-title">Configuración del método</div>
+        <div class="method-meta">
+          <span class="badge method">Newton-Raphson</span>
+          <span class="badge eq">f(x) = 5eˣ − 2x − 10 = 0</span>
+          <span class="badge eq">f′(x) = 5eˣ − 2</span>
+          <span class="badge param">x₀ = 0</span>
+          <span class="badge param">tol = 1×10⁻⁵</span>
+        </div>
+      </div>
+
+      <!-- Sobre el método -->
+      <div class="card">
+        <div class="card-title">Sobre el método — Newton-Raphson</div>
+        <div class="method-desc">
+          <p>El <strong>método de Newton-Raphson</strong> es un algoritmo iterativo para encontrar raíces de funciones. Parte de una estimación inicial x₀ y, en cada paso, aproxima la función con su recta tangente para obtener una mejor estimación.</p>
+          <p><strong>Fórmula de iteración:</strong></p>
+          <div class="formula-box">x_{n+1} = x_n − f(x_n) / f′(x_n)</div>
+          <p>Cada nueva aproximación se obtiene restando al valor actual el cociente entre la función y su derivada evaluadas en ese punto. Geométricamente, es la intersección de la recta tangente con el eje x.</p>
+          <p><strong>Ventajas y cuándo usarlo:</strong></p>
+          <ul class="pros-list">
+            <li>Convergencia cuadrática (muy rápida)</li>
+            <li>Pocas iteraciones necesarias</li>
+            <li>Ideal cuando f′(x) es fácil de calcular</li>
+            <li>Preciso cerca de la raíz</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Procedimiento -->
+      <div class="card">
+        <div class="card-title">Procedimiento paso a paso</div>
+        <ol class="step-list">
+          <li>
+            Definir la función y su derivada:<br>
+            <span class="math">f(x) = 5eˣ − 2x − 10</span> &nbsp;&nbsp;
+            <span class="math">f′(x) = 5eˣ − 2</span>
+          </li>
+          <li>
+            Evaluar en el valor inicial <span class="math">x₀ = 0</span>:<br>
+            <span class="math">f(0) = 5e⁰ − 2(0) − 10 = 5 − 10 = −5.00000</span><br>
+            <span class="math">f′(0) = 5e⁰ − 2 = 5 − 2 = 3.00000</span>
+          </li>
+          <li>
+            Aplicar la fórmula de Newton-Raphson para obtener x₁:<br>
+            <span class="math">x₁ = x₀ − f(x₀)/f′(x₀) = 0 − (−5)/3 = 0 + 1.66667</span>
+            <div class="step-result">x₁ = 1.66667 &nbsp;<span>← primera iteración</span></div>
+          </li>
+          <li>
+            Calcular el error relativo en x₁:<br>
+            <span class="math">Er = |x₁ − x₀| / |x₁| = |1.66667 − 0| / |1.66667| = 1.00000e+00</span>
+          </li>
+          <li>
+            Como Er ≥ 1×10⁻⁵, continuar iterando hasta que el error sea menor que la tolerancia. El método converge en <strong>6 iteraciones</strong>.
+          </li>
+        </ol>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card">
+        <div class="card-title">Tabla de iteraciones</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>n</th><th>x_n</th><th>f(x_n)</th><th>Error rel.</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0</td><td>0.00000</td><td class="val-neg">−5.00000</td><td class="val-err">—</td></tr>
+              <tr><td>1</td><td>1.66667</td><td class="val-pos">13.13912</td><td>1.00000e+00</td></tr>
+              <tr><td>2</td><td>1.12977</td><td class="val-pos">3.21522</td><td>4.75223e−01</td></tr>
+              <tr><td>3</td><td>0.89116</td><td class="val-pos">0.40748</td><td>2.67752e−01</td></tr>
+              <tr><td>4</td><td>0.85117</td><td class="val-pos">0.00962</td><td>4.69813e−02</td></tr>
+              <tr><td>5</td><td>0.85018</td><td class="val-pos">0.00001</td><td>1.16483e−03</td></tr>
+              <tr><td>6</td><td class="val-conv">0.85018</td><td class="val-zero">0.00000</td><td class="val-conv">6.96160e−07 ✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="result-box">
+          <div class="result-chip">
+            <div class="label">Raíz encontrada</div>
+            <div class="value green">x ≈ 0.85018</div>
+            <div class="sub">f(raíz) ≈ 2.05×10⁻¹²</div>
+          </div>
+          <div class="result-chip">
+            <div class="label">Iteraciones</div>
+            <div class="value blue">6</div>
+            <div class="sub">convergencia cuadrática</div>
+          </div>
+          <div class="result-chip">
+            <div class="label">Error final</div>
+            <div class="value">6.96×10⁻⁷</div>
+            <div class="sub">criterio: Er &lt; 1×10⁻⁵ ✓</div>
+          </div>
+        </div>
+        <div class="conv-row">
+          <div class="conv-label">Convergencia alcanzada</div>
+          <div class="conv-bar-track"><div class="conv-bar-fill"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /panel-0 -->
+
+    <!-- ══════════════════════════════════════════════
+         TAB 2 — Ejercicio 1b: Secante
+    ══════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-1">
+
+      <!-- Configuración -->
+      <div class="card">
+        <div class="card-title">Configuración del método</div>
+        <div class="method-meta">
+          <span class="badge method">Secante</span>
+          <span class="badge eq">f(x) = √x − 2 ln(x) = 0</span>
+          <span class="badge param">x₀ = 3</span>
+          <span class="badge param">x₁ = 5</span>
+          <span class="badge param">tol = 1×10⁻⁵</span>
+        </div>
+      </div>
+
+      <!-- Sobre el método -->
+      <div class="card">
+        <div class="card-title">Sobre el método — Secante</div>
+        <div class="method-desc">
+          <p>El <strong>método de la Secante</strong> es una variación de Newton-Raphson que <strong>no requiere calcular la derivada analítica</strong>. En su lugar, aproxima f′(x) usando una diferencia finita con los dos últimos puntos.</p>
+          <p><strong>Fórmula de iteración:</strong></p>
+          <div class="formula-box">x_{n+1} = x_n − f(x_n) · (x_n − x_{n−1}) / (f(x_n) − f(x_{n−1}))</div>
+          <p>La línea que une los puntos (x_{n−1}, f(x_{n−1})) y (x_n, f(x_n)) es la <em>secante</em>. El nuevo punto es donde esa secante cruza el eje x.</p>
+          <p><strong>Ventajas frente a Newton-Raphson:</strong></p>
+          <ul class="pros-list">
+            <li>No necesita derivada analítica</li>
+            <li>Útil cuando f′ es difícil de calcular</li>
+            <li>Convergencia superlineal (orden ≈ 1.618)</li>
+            <li>Solo requiere evaluaciones de f(x)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Procedimiento -->
+      <div class="card">
+        <div class="card-title">Procedimiento paso a paso</div>
+        <ol class="step-list">
+          <li>
+            Definir la función:<br>
+            <span class="math">f(x) = √x − 2·ln(x)</span>
+          </li>
+          <li>
+            Evaluar en los dos valores iniciales:<br>
+            <span class="math">f(3) = √3 − 2·ln(3) = 1.73205 − 2.19722 = −0.46517</span><br>
+            <span class="math">f(5) = √5 − 2·ln(5) = 2.23607 − 3.21888 = −0.98281</span>
+          </li>
+          <li>
+            Aplicar la fórmula de la Secante con x₀=3, x₁=5:<br>
+            <span class="math">x₂ = 5 − f(5)·(5−3) / (f(5)−f(3))</span><br>
+            <span class="math">x₂ = 5 − (−0.98281)·(2) / (−0.98281−(−0.46517))</span><br>
+            <span class="math">x₂ = 5 − (−1.96562) / (−0.51764)</span><br>
+            <span class="math">x₂ = 5 − 3.79731 = 1.20269</span>
+            <div class="step-result">x₂ = 1.20269 &nbsp;<span>← primera iteración efectiva</span></div>
+          </li>
+          <li>
+            Calcular el error relativo:<br>
+            <span class="math">Er = |x₂ − x₁| / |x₂| = |1.20269 − 5| / |1.20269| = 3.15734e+00</span>
+          </li>
+          <li>
+            Como Er ≥ 1×10⁻⁵, continuar con la ventana deslizante hasta convergencia. El método converge en <strong>9 iteraciones</strong>.
+          </li>
+        </ol>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card">
+        <div class="card-title">Tabla de iteraciones</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>n</th><th>x_n</th><th>f(x_n)</th><th>Error rel.</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0</td><td>3.00000</td><td class="val-neg">−0.46517</td><td class="val-err">—</td></tr>
+              <tr><td>1</td><td>5.00000</td><td class="val-neg">−0.98281</td><td class="val-err">—</td></tr>
+              <tr><td>2</td><td>1.20269</td><td class="val-pos">0.72755</td><td>3.15734e+00</td></tr>
+              <tr><td>3</td><td>2.81798</td><td class="val-neg">−0.39336</td><td>5.73208e−01</td></tr>
+              <tr><td>4</td><td>2.25113</td><td class="val-neg">−0.12249</td><td>2.51808e−01</td></tr>
+              <tr><td>5</td><td>1.99480</td><td class="val-pos">0.03129</td><td>1.28501e−01</td></tr>
+              <tr><td>6</td><td>2.04695</td><td class="val-neg">−0.00199</td><td>2.54792e−02</td></tr>
+              <tr><td>7</td><td>2.04384</td><td class="val-neg">−0.00003</td><td>1.52340e−03</td></tr>
+              <tr><td>8</td><td>2.04379</td><td class="val-zero">0.00000</td><td>2.37591e−05</td></tr>
+              <tr><td>9</td><td class="val-conv">2.04379</td><td class="val-zero">−0.00000</td><td class="val-conv">2.34657e−08 ✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="result-box">
+          <div class="result-chip">
+            <div class="label">Raíz encontrada</div>
+            <div class="value green">x ≈ 2.04379</div>
+            <div class="sub">f(raíz) ≈ −4.57×10⁻¹³</div>
+          </div>
+          <div class="result-chip">
+            <div class="label">Iteraciones</div>
+            <div class="value blue">9</div>
+            <div class="sub">superlineal (orden ≈ 1.618)</div>
+          </div>
+          <div class="result-chip">
+            <div class="label">Error final</div>
+            <div class="value">2.35×10⁻⁸</div>
+            <div class="sub">criterio: Er &lt; 1×10⁻⁵ ✓</div>
+          </div>
+        </div>
+        <div class="conv-row">
+          <div class="conv-label">Convergencia alcanzada</div>
+          <div class="conv-bar-track"><div class="conv-bar-fill"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /panel-1 -->
+
+    <!-- ══════════════════════════════════════════════
+         TAB 3 — Ejercicio 2: Bisección
+    ══════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-2">
+
+      <!-- Configuración -->
+      <div class="card">
+        <div class="card-title">Configuración del método</div>
+        <div class="method-meta">
+          <span class="badge method">Bisección</span>
+          <span class="badge eq">f(y) = e⁻ʸ − 4y = 0</span>
+          <span class="badge param">a = 0.1</span>
+          <span class="badge param">b = 0.3</span>
+          <span class="badge param">tol E &lt; 0.01</span>
+        </div>
+      </div>
+
+      <!-- Sobre el método -->
+      <div class="card">
+        <div class="card-title">Sobre el método — Bisección</div>
+        <div class="method-desc">
+          <p>El <strong>método de Bisección</strong> es el más robusto para encontrar raíces. Se basa en el <em>Teorema de Bolzano</em>: si f es continua en [a, b] y f(a)·f(b) &lt; 0, entonces existe al menos una raíz en ese intervalo.</p>
+          <p><strong>Procedimiento:</strong> En cada iteración se evalúa el punto medio c = (a+b)/2. Si f(a)·f(c) &lt; 0, la raíz está en [a, c]; si no, está en [c, b]. El intervalo se reduce a la mitad en cada paso.</p>
+          <div class="formula-box">c = (a + b) / 2 &nbsp;&nbsp;→&nbsp;&nbsp; error = |b − a| / 2</div>
+          <p><strong>Requisito previo:</strong> el intervalo inicial <strong>debe contener un cambio de signo</strong> — es decir, f(a) y f(b) deben tener signos opuestos.</p>
+          <ul class="pros-list">
+            <li>Convergencia garantizada</li>
+            <li>No necesita derivada</li>
+            <li>Robusto ante funciones irregulares</li>
+            <li>Fácil de implementar</li>
+            <li>Error acotado en cada paso</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Procedimiento -->
+      <div class="card">
+        <div class="card-title">Procedimiento paso a paso</div>
+        <ol class="step-list">
+          <li>
+            Definir la función:<br>
+            <span class="math">f(y) = e⁻ʸ − 4y</span>
+          </li>
+          <li>
+            Verificar cambio de signo en el intervalo [0.1, 0.3]:<br>
+            <span class="math">f(0.1) = e⁻⁰·¹ − 4(0.1) = 0.90484 − 0.40000 = +0.50484 &gt; 0</span><br>
+            <span class="math">f(0.3) = e⁻⁰·³ − 4(0.3) = 0.74082 − 1.20000 = −0.45918 &lt; 0</span>
+            <div class="step-result">f(0.1) · f(0.3) &lt; 0 &nbsp;<span>← cambio de signo confirmado ✓</span></div>
+          </li>
+          <li>
+            Calcular el primer punto medio:<br>
+            <span class="math">c = (a + b) / 2 = (0.1 + 0.3) / 2 = 0.20000</span>
+            <div class="step-result">c₁ = 0.20000 &nbsp;<span>← iteración 1</span></div>
+          </li>
+          <li>
+            Evaluar f(c) y decidir el nuevo subintervalo:<br>
+            <span class="math">f(0.2) = e⁻⁰·² − 4(0.2) = 0.81873 − 0.80000 = +0.01873</span><br>
+            Como f(0.1)&gt;0 y f(0.2)&gt;0 → la raíz está en <span class="math">[0.2, 0.3]</span>
+          </li>
+          <li>
+            Continuar bisectando hasta que el error absoluto sea menor que 0.01. El método converge en <strong>5 iteraciones</strong>.
+          </li>
+        </ol>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card">
+        <div class="card-title">Tabla de iteraciones</div>
+        <div class="tbl-wrap">
+          <table class="bis">
+            <thead>
+              <tr><th>Iter</th><th>a</th><th>b</th><th>c = (a+b)/2</th><th>f(c)</th><th>Error abs.</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>0.10000</td><td>0.30000</td><td>0.20000</td><td class="val-pos">0.01873</td><td>1.00000e−01</td></tr>
+              <tr><td>2</td><td>0.20000</td><td>0.30000</td><td>0.25000</td><td class="val-neg">−0.22120</td><td>5.00000e−02</td></tr>
+              <tr><td>3</td><td>0.20000</td><td>0.25000</td><td>0.22500</td><td class="val-neg">−0.10148</td><td>2.50000e−02</td></tr>
+              <tr><td>4</td><td>0.20000</td><td>0.22500</td><td>0.21250</td><td class="val-neg">−0.04144</td><td>1.25000e−02</td></tr>
+              <tr><td>5</td><td>0.20000</td><td>0.21250</td><td class="val-conv">0.20625</td><td class="val-neg">−0.01137</td><td class="val-conv">6.25000e−03 ✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="result-box">
+          <div class="result-chip">
+            <div class="label">Raíz aproximada</div>
+            <div class="value green">y ≈ 0.20625</div>
+            <div class="sub">f(raíz) ≈ −1.14×10⁻²</div>
+          </div>
+          <div class="result-chip">
+            <div class="label">Iteraciones</div>
+            <div class="value blue">5</div>
+            <div class="sub">convergencia lineal</div>
+          </div>
+          <div class="result-chip">
+            <div class="label">Error final</div>
+            <div class="value">6.25×10⁻³</div>
+            <div class="sub">criterio: E &lt; 0.01 ✓</div>
+          </div>
+        </div>
+        <div class="conv-row">
+          <div class="conv-label">Convergencia alcanzada</div>
+          <div class="conv-bar-track"><div class="conv-bar-fill"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /panel-2 -->
+
+    <!-- ══════════════════════════════════════════════
+         TAB 4 — Ejercicio 3: Newton-Raphson
+    ══════════════════════════════════════════════ -->
+    <div class="tab-panel" id="panel-3">
+
+      <!-- Configuración -->
+      <div class="card">
+        <div class="card-title">Configuración del método</div>
+        <div class="method-meta">
+          <span class="badge method">Newton-Raphson</span>
+          <span class="badge eq">f(t) = cos(t) − e⁻ᵗ = 0</span>
+          <span class="badge eq">f′(t) = −sin(t) + e⁻ᵗ</span>
+          <span class="badge param">t₀ = 1</span>
+          <span class="badge param">tol = 1×10⁻⁵</span>
+        </div>
+      </div>
+
+      <!-- Sobre el método -->
+      <div class="card">
+        <div class="card-title">Sobre el método — Newton-Raphson</div>
+        <div class="method-desc">
+          <p>El <strong>método de Newton-Raphson</strong> construye en cada iteración la recta tangente a la curva f(t) en el punto actual, y usa su intersección con el eje t como siguiente aproximación.</p>
+          <p><strong>Fórmula de iteración:</strong></p>
+          <div class="formula-box">t_{n+1} = t_n − f(t_n) / f′(t_n)</div>
+          <p>Su convergencia es <strong>cuadrática</strong>: el número de cifras decimales correctas se duplica en cada iteración, por lo que basta con muy pocas iteraciones para alcanzar alta precisión.</p>
+          <ul class="pros-list">
+            <li>Convergencia cuadrática</li>
+            <li>Solo 4 iteraciones para tol = 1×10⁻⁵</li>
+            <li>Derivada analítica disponible</li>
+            <li>Error disminuye muy rápidamente</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Procedimiento -->
+      <div class="card">
+        <div class="card-title">Procedimiento paso a paso</div>
+        <ol class="step-list">
+          <li>
+            Definir la función y su derivada:<br>
+            <span class="math">f(t) = cos(t) − e⁻ᵗ</span> &nbsp;&nbsp;
+            <span class="math">f′(t) = −sin(t) + e⁻ᵗ</span>
+          </li>
+          <li>
+            Evaluar en el valor inicial <span class="math">t₀ = 1</span>:<br>
+            <span class="math">f(1) = cos(1) − e⁻¹ = 0.54030 − 0.36788 = 0.17242</span><br>
+            <span class="math">f′(1) = −sin(1) + e⁻¹ = −0.84147 + 0.36788 = −0.47359</span>
+          </li>
+          <li>
+            Aplicar la fórmula de Newton-Raphson para obtener t₁:<br>
+            <span class="math">t₁ = t₀ − f(t₀)/f′(t₀) = 1 − (0.17242)/(−0.47359)</span><br>
+            <span class="math">t₁ = 1 − (−0.36408) = 1.36408</span>
+            <div class="step-result">t₁ = 1.36408 &nbsp;<span>← primera iteración</span></div>
+          </li>
+          <li>
+            Calcular el error relativo en t₁:<br>
+            <span class="math">Er = |t₁ − t₀| / |t₁| = |1.36408 − 1| / |1.36408| = 2.66903e−01</span>
+          </li>
+          <li>
+            Como Er ≥ 1×10⁻⁵, continuar iterando. Gracias a la convergencia cuadrática, el método converge en solo <strong>4 iteraciones</strong>.
+          </li>
+        </ol>
+      </div>
+
+      <!-- Tabla -->
+      <div class="card">
+        <div class="card-title">Tabla de iteraciones</div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr><th>n</th><th>t_n</th><th>f(t_n)</th><th>Error rel.</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0</td><td>1.00000</td><td class="val-pos">0.17242</td><td class="val-err">—</td></tr>
+              <tr><td>1</td><td>1.36408</td><td class="val-neg">−0.05036</td><td>2.66903e−01</td></tr>
+              <tr><td>2</td><td>1.29442</td><td class="val-neg">−0.00119</td><td>5.38094e−02</td></tr>
+              <tr><td>3</td><td>1.29270</td><td class="val-zero">−0.00000</td><td>1.33520e−03</td></tr>
+              <tr><td>4</td><td class="val-conv">1.29270</td><td class="val-zero">−0.00000</td><td class="val-conv">9.18472e−07 ✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="result-box">
+          <div class="result-chip">
+            <div class="label">Raíz encontrada</div>
+            <div class="value green">t ≈ 1.29270</div>
+            <div class="sub">f(raíz) ≈ −3.87×10⁻¹³</div>
+          </div>
+          <div class="result-chip">
+            <div class="label">Iteraciones</div>
+            <div class="value blue">4</div>
+            <div class="sub">convergencia cuadrática</div>
+          </div>
+          <div class="result-chip">
+            <div class="label">Error final</div>
+            <div class="value">9.18×10⁻⁷</div>
+            <div class="sub">criterio: Er &lt; 1×10⁻⁵ ✓</div>
+          </div>
+        </div>
+        <div class="conv-row">
+          <div class="conv-label">Convergencia alcanzada</div>
+          <div class="conv-bar-track"><div class="conv-bar-fill"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /panel-3 -->
+
+  </div><!-- /container -->
+</div><!-- /simulador -->
+
+<script>
+  function verEjercicios() {
+    document.getElementById('portada').style.display = 'none';
+    document.getElementById('simulador').classList.add('visible');
+  }
+  function volverPortada() {
+    document.getElementById('simulador').classList.remove('visible');
+    document.getElementById('portada').style.display = '';
+  }
+  function showTab(idx) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+    document.querySelectorAll('.tab-panel').forEach((p, i) => p.classList.toggle('active', i === idx));
+  }
+</script>
+
+</body>
+</html>
